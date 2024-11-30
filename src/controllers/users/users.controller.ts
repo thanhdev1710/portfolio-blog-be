@@ -17,8 +17,19 @@ const updateUserSchema = z
     }
   );
 
+const updateRoleSchema = z.object({
+  id: z.number(),
+  role: z.enum(["admin", "author", "editor", "subscriber"]),
+});
+
 export const validationUpdateUser = CatchAsync(async (req, res, next) => {
   updateUserSchema.parse(req.body);
+
+  next();
+});
+
+export const validationUpdateRole = CatchAsync(async (req, res, next) => {
+  updateRoleSchema.parse(req.body);
 
   next();
 });
@@ -65,4 +76,21 @@ export const deleteUser = CatchAsync(async (req, res, next) => {
   if (result.rowCount === 0) return next(new AppError("User not found.", 404));
 
   res.status(204).send();
+});
+
+export const updateRole = CatchAsync(async (req, res, next) => {
+  const { role, id } = req.body;
+  const user = (await db.select().from(users).where(eq(users.id, id)))[0];
+
+  if (!user) return next(new AppError("", 404));
+
+  const userUpdate = (
+    await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, user.id))
+      .returning()
+  )[0];
+
+  res.json({ role, user: userUpdate });
 });

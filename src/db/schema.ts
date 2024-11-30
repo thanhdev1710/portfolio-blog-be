@@ -1,23 +1,8 @@
-import { pgTable, index, unique, serial, varchar, text, timestamp, foreignKey, integer, check, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, unique, serial, varchar, timestamp, foreignKey, integer, index, text, check, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
-export const userRole = pgEnum("user_role", ['user', 'admin'])
+export const roleEnum = pgEnum("role_enum", ['admin', 'author', 'editor', 'subscriber'])
 
-
-export const users = pgTable("users", {
-	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
-	email: varchar({ length: 255 }).notNull(),
-	image: text(),
-	password: varchar({ length: 300 }).notNull(),
-	role: userRole().default('user').notNull(),
-	passwordChangedAt: timestamp("password_changed_at", { withTimezone: true, mode: 'string' }),
-}, (table) => {
-	return {
-		nameIdx: index("users_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
-		usersEmailKey: unique("users_email_key").on(table.email),
-	}
-});
 
 export const categories = pgTable("categories", {
 	id: serial().primaryKey().notNull(),
@@ -65,6 +50,23 @@ export const comments = pgTable("comments", {
 	}
 });
 
+export const users = pgTable("users", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	image: text(),
+	password: varchar({ length: 300 }).notNull(),
+	role: roleEnum().default('subscriber').notNull(),
+	passwordChangedAt: timestamp("password_changed_at", { withTimezone: true, mode: 'string' }),
+	passwordResetToken: varchar("password_reset_token", { length: 255 }),
+	passwordResetExpires: timestamp("password_reset_expires", { withTimezone: true, mode: 'string' }),
+}, (table) => {
+	return {
+		nameIdx: index("users_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		usersEmailKey: unique("users_email_key").on(table.email),
+	}
+});
+
 export const postSections = pgTable("post_sections", {
 	id: serial().primaryKey().notNull(),
 	postId: integer("post_id").notNull(),
@@ -74,7 +76,7 @@ export const postSections = pgTable("post_sections", {
 	altText: varchar("alt_text", { length: 255 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	position: integer().default(0),
+	position: integer().notNull(),
 }, (table) => {
 	return {
 		imageAltCheck: check("image_alt_check", sql`((image_url IS NOT NULL) AND (alt_text IS NOT NULL)) OR ((image_url IS NULL) AND (alt_text IS NULL))`),
