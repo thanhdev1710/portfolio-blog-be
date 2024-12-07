@@ -19,11 +19,9 @@ export const categories = pgTable("categories", {
 export const tags = pgTable("tags", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 100 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
 }, (table) => {
 	return {
 		tagsNameKey: unique("tags_name_key").on(table.name),
-		tagsSlugKey: unique("tags_slug_key").on(table.slug),
 	}
 });
 
@@ -76,9 +74,14 @@ export const postSections = pgTable("post_sections", {
 	altText: varchar("alt_text", { length: 255 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	position: integer().notNull(),
+	position: integer().default(0).notNull(),
 }, (table) => {
 	return {
+		fkPost: foreignKey({
+			columns: [table.postId],
+			foreignColumns: [posts.id],
+			name: "fk_post"
+		}).onDelete("cascade"),
 		imageAltCheck: check("image_alt_check", sql`((image_url IS NOT NULL) AND (alt_text IS NOT NULL)) OR ((image_url IS NULL) AND (alt_text IS NULL))`),
 	}
 });

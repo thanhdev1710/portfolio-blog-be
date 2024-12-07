@@ -4,7 +4,7 @@ import { PAGE_SIZE } from "../../constants/page";
 import { z } from "zod";
 import AppError from "../../utils/error/AppError";
 import CatchAsync from "../../utils/error/CatchAsync";
-import { likes, posts, users } from "../../db/schema";
+import { likes, posts, postsTags, tags, users } from "../../db/schema";
 import { and, count, desc, eq, getTableColumns, ilike, or } from "drizzle-orm";
 
 const postSchema = z.object({
@@ -81,24 +81,66 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
 
 export const createPost = CatchAsync(async (req, res, next) => {
   const { body } = req;
-  const { title, content, summary, status } = body;
+  const { title, content, summary, status, tags: ts } = body;
 
-  const data = await db
-    .insert(posts)
-    .values({
-      content,
-      status,
-      summary,
-      title,
-      userId: (req as any).user.id,
-      slug: "",
-    })
-    .returning({
-      id: posts.id,
-      slug: posts.slug,
-      userId: posts.userId,
-    });
+  const data = await db.transaction(async (tx) => {
+    // Thêm bài viết vào bảng posts
+    const postData = await tx
+      .insert(posts)
+      .values({
+        content,
+        status,
+        summary,
+        title,
+        userId: (req as any).user.id,
+        slug: "", // Bạn có thể tạo slug tự động hoặc để trống
+      })
+      .returning({
+        id: posts.id,
+        slug: posts.slug,
+        userId: posts.userId,
+      });
 
+    const postId = postData[0].id;
+
+    // Xử lý tags: kiểm tra và thêm tag mới nếu cần
+    const tagIds = await Promise.all(
+      ts.map(async (tag: string) => {
+        // Kiểm tra xem tag đã tồn tại chưa
+        let existingTag = await tx
+          .select()
+          .from(tags)
+          .where(eq(tags.name, tag))
+          .limit(1);
+
+        if (existingTag.length === 0) {
+          // Nếu chưa tồn tại, thêm tag mới vào bảng tags
+          const newTag = await tx
+            .insert(tags)
+            .values({ name: tag })
+            .returning();
+
+          return newTag[0].id; // Trả về ID của tag vừa thêm
+        } else {
+          // Nếu tag đã tồn tại, trả về ID của tag đó
+          return existingTag[0].id;
+        }
+      })
+    );
+
+    // Thêm mối quan hệ giữa bài viết và tags vào bảng posts_tags
+    const postTagRelations = tagIds.map((tagId) => ({
+      postId: postId,
+      tagId: tagId,
+    }));
+
+    // Thêm vào bảng posts_tags
+    await tx.insert(postsTags).values(postTagRelations);
+
+    return postData;
+  });
+
+  // Trả về kết quả
   res.status(201).json({
     status: "success",
     message: "Post created successfully",
