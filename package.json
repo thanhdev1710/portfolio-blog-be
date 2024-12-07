@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "set NODE_ENV=production && node dist/server.js",
+    "start": "npx tsc && set NODE_ENV=production && node dist/src/server.js",
     "dev": "set NODE_ENV=dev && nodemon src/server.ts",
     "dev:prod": "set NODE_ENV=production && nodemon src/server.ts"
   },
