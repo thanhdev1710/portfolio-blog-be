@@ -10,10 +10,7 @@ if (result.error) {
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.NODE_ENV?.toLowerCase() === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: false,
   idleTimeoutMillis: process.env.PG_IDLE_TIMEOUT
     ? parseInt(process.env.PG_IDLE_TIMEOUT)
     : 30000,
