@@ -28,7 +28,7 @@ pool
   })
   .catch((err) => {
     console.error("Failed to connect to the database", err.stack || err);
-    process.exit(1); // Thoát chương trình nếu không thể kết nối
+    // process.exit(1); // Thoát chương trình nếu không thể kết nối
   });
 
 export const db = drizzle({ client: pool, schema });
