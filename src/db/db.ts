@@ -6,6 +6,7 @@ import { Pool } from "pg";
 configDotenv();
 
 console.log(process.env.DB_URL);
+console.log(process.env);
 
 export const pool = new Pool({
   connectionString: process.env.DB_URL,
