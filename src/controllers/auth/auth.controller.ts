@@ -163,6 +163,7 @@ export const login = CatchAsync(async (req, res, next) => {
 
     if (isCorrect) {
       const token = signJWT(userId);
+
       return res.status(200).json({
         status: "success",
         token,
@@ -297,9 +298,7 @@ export const forgotPassword = CatchAsync(async (req, res, next) => {
     })
     .where(eq(users.id, user.id));
 
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`;
+  const resetURL = `${process.env.ORIGIN}/forgot/${resetToken}`;
 
   // 5) Tạo thông điệp cho email
   const html = `<!DOCTYPE html>

@@ -2,11 +2,15 @@ import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
+const sslConfig =
+  process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: true } // Bật SSL trong môi trường production
+    : false;
+
+// Deploy thì bỏ sslConfig và không sử dụng là false
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Disable certificate validation (use only in development)
-  },
+  ssl: false,
   idleTimeoutMillis: process.env.PG_IDLE_TIMEOUT
     ? parseInt(process.env.PG_IDLE_TIMEOUT)
     : 30000,

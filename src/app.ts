@@ -7,6 +7,7 @@ import morgan from "morgan";
 import cors from "cors";
 import GlobalError from "./controllers/error/GlobalError";
 import AppError from "./utils/error/AppError";
+import cookieParser from "cookie-parser";
 
 // Cấu hình CORS: Cho phép các nguồn cụ thể (Vercel và localhost)
 const corsOptions = {
@@ -25,6 +26,7 @@ app.use(morgan("dev"));
 app.use(cors(corsOptions));
 
 // Phân tích JSON từ request body
+app.use(cookieParser());
 app.use(express.json());
 
 // Routes: Định nghĩa các route cho posts
