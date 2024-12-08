@@ -3,9 +3,11 @@ import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-const result = dotenv.config();
-if (result.error) {
-  console.error("Error loading .env file:", result.error);
+if (process.env.NODE_ENV !== "production") {
+  const result = dotenv.config();
+  if (result.error) {
+    console.error("Error loading .env file:", result.error);
+  }
 }
 
 export const pool = new Pool({
