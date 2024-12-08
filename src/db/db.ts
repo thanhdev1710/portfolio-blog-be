@@ -1,24 +1,23 @@
-import dotenv from "dotenv";
+import { configDotenv } from "dotenv";
 import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-if (process.env.NODE_ENV !== "production") {
-  const result = dotenv.config();
-  if (result.error) {
-    console.error("Error loading .env file:", result.error);
-  }
-}
+configDotenv();
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false,
+  port: Number(process.env.DB_PORT),
+  database: process.env.DB_DATABASE,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
   idleTimeoutMillis: process.env.PG_IDLE_TIMEOUT
     ? parseInt(process.env.PG_IDLE_TIMEOUT)
     : 30000,
   connectionTimeoutMillis: process.env.PG_CONN_TIMEOUT
     ? parseInt(process.env.PG_CONN_TIMEOUT)
-    : 2000,
+    : 20000,
+  ssl: false,
 });
 
 // Kiểm tra kết nối
