@@ -1,15 +1,14 @@
-import { configDotenv } from "dotenv";
 import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-configDotenv();
-
-console.log(process.env.DB_URL);
-console.log(process.env);
+if (process.env.NODE_ENV !== "production") {
+  const { configDotenv } = require("dotenv");
+  configDotenv(); // Tải biến môi trường từ .env khi chạy trong môi trường phát triển
+}
 
 export const pool = new Pool({
-  connectionString: process.env.DB_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false, // Disable certificate validation (use only in development)
   },

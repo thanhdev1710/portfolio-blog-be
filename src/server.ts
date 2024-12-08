@@ -1,8 +1,9 @@
-import { configDotenv } from "dotenv";
 import { closePool } from "./db/db";
 
-// Load các biến môi trường từ file .env
-configDotenv();
+if (process.env.NODE_ENV !== "production") {
+  const { configDotenv } = require("dotenv");
+  configDotenv(); // Tải biến môi trường từ .env khi chạy trong môi trường phát triển
+}
 
 // Lấy cổng từ biến môi trường hoặc mặc định là 8000
 const port = process.env.PORT || 8000;
