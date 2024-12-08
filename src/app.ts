@@ -10,7 +10,7 @@ import AppError from "./utils/error/AppError";
 
 // Cấu hình CORS: Cho phép các nguồn cụ thể (Vercel và localhost)
 const corsOptions = {
-  origin: ["https://thanhdev.vercel.app", "http://localhost:3000"],
+  origin: [process.env.ORIGIN!, "http://localhost:3000"],
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };

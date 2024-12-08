@@ -2,10 +2,8 @@ import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-if (process.env.NODE_ENV !== "production") {
-  const { configDotenv } = require("dotenv");
-  configDotenv(); // Tải biến môi trường từ .env khi chạy trong môi trường phát triển
-}
+const { configDotenv } = require("dotenv");
+configDotenv();
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
