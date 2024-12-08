@@ -6,18 +6,16 @@ import { Pool } from "pg";
 configDotenv();
 
 export const pool = new Pool({
-  port: Number(process.env.DB_PORT),
-  database: process.env.DB_DATABASE,
-  host: process.env.DB_HOST,
-  user: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
+  connectionString: process.env.DB_URL,
+  ssl: {
+    rejectUnauthorized: false, // Disable certificate validation (use only in development)
+  },
   idleTimeoutMillis: process.env.PG_IDLE_TIMEOUT
     ? parseInt(process.env.PG_IDLE_TIMEOUT)
     : 30000,
   connectionTimeoutMillis: process.env.PG_CONN_TIMEOUT
     ? parseInt(process.env.PG_CONN_TIMEOUT)
     : 20000,
-  ssl: false,
 });
 
 // Kiểm tra kết nối
