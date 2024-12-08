@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "webpack && node dist/server.js",
+    "start": "webpack --mode production && node dist/server.js",
     "dev": "set NODE_ENV=dev && nodemon src/server.ts",
     "dev:prod": "set NODE_ENV=production && nodemon src/server.ts"
   },
