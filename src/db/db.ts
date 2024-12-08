@@ -5,6 +5,8 @@ import { Pool } from "pg";
 
 configDotenv();
 
+console.log(process.env.DB_URL);
+
 export const pool = new Pool({
   connectionString: process.env.DB_URL,
   ssl: {
