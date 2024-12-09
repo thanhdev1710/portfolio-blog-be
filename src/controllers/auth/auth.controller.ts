@@ -504,14 +504,17 @@ export const updatePassword = CatchAsync(async (req, res, next) => {
   const isCorrect = await bcrypt.compareSync(passwordCurrent, user.password);
 
   if (!isCorrect)
-    return next(new AppError("Your current password is wrong", 201));
+    return next(new AppError("Your current password is wrong", 401));
 
   const hashPass = await bcrypt.hashSync(password, 12);
 
   const userId = (
     await db
       .update(users)
-      .set({ password: hashPass })
+      .set({
+        password: hashPass,
+        passwordChangedAt: new Date(Date.now() - 1000).toISOString(),
+      })
       .where(eq(users.id, (req as any).user.id))
       .returning()
   )[0].id;
