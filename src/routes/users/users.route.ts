@@ -14,8 +14,10 @@ import {
   restrictTo,
   restrictToOwnerOrRoles,
   signup,
+  updatePassword,
   validationCreateUser,
   validationResetPasswordUser,
+  validationUpdatePasswordUser,
 } from "../../controllers/auth/auth.controller";
 import { users } from "../../db/schema";
 
@@ -28,6 +30,10 @@ router.route("/forgotPassword").post(forgotPassword);
 router
   .route("/resetPassword/:token")
   .patch(validationResetPasswordUser, resetPassword);
+
+router
+  .route("/updatePassword")
+  .patch(protect, validationUpdatePasswordUser, updatePassword);
 
 router
   .route("/updateRole")

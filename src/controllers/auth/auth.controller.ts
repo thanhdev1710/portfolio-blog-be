@@ -62,6 +62,31 @@ const resetPasswordUserSchema = z
     message: "Passwords must match.",
   });
 
+const updatePasswordUserSchema = z
+  .object({
+    password: z
+      .string()
+      .min(16)
+      .max(50)
+      .refine(
+        (password) =>
+          /[A-Z]/.test(password) &&
+          /[a-z]/.test(password) &&
+          /[0-9]/.test(password) &&
+          /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        {
+          message:
+            "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+        }
+      ),
+    passwordConfirm: z.string(),
+    passwordCurrent: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    path: ["passwordConfirm"],
+    message: "Passwords must match.",
+  });
+
 export const validationCreateUser = CatchAsync(async (req, res, next) => {
   createUserSchema.parse(req.body);
 
@@ -71,6 +96,14 @@ export const validationCreateUser = CatchAsync(async (req, res, next) => {
 export const validationResetPasswordUser = CatchAsync(
   async (req, res, next) => {
     resetPasswordUserSchema.parse(req.body);
+
+    next();
+  }
+);
+
+export const validationUpdatePasswordUser = CatchAsync(
+  async (req, res, next) => {
+    updatePasswordUserSchema.parse(req.body);
 
     next();
   }
@@ -123,6 +156,15 @@ function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+function createSignToken(id: number, statusCode: number, res: Response) {
+  const token = signJWT(id);
+
+  res.status(statusCode).json({
+    status: "success",
+    token,
+  });
+}
+
 export const signup = CatchAsync(async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -136,12 +178,7 @@ export const signup = CatchAsync(async (req, res, next) => {
 
   const result = await pool.query(sql, [name, email, hashPass]);
 
-  const token = signJWT(result.rows[0].id);
-
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  createSignToken(result.rows[0].id, 200, res);
 });
 
 export const login = CatchAsync(async (req, res, next) => {
@@ -198,7 +235,7 @@ export const protect = CatchAsync(async (req, res, next) => {
   const sql = `
     SELECT * FROM users
     WHERE id = $1
-  `;
+    `;
 
   const result = await pool.query(sql, [decode.id]);
   const userExisting = result.rows[0];
@@ -221,7 +258,6 @@ export const protect = CatchAsync(async (req, res, next) => {
       new AppError("User recently changed password! Please log in again", 401)
     );
   }
-
   (req as any).user = userExisting;
   next();
 });
@@ -238,6 +274,7 @@ export const restrictTo = (roles: string[]) => {
   };
 };
 
+// Chỉ dùng cho các route có id param
 export const restrictToOwnerOrRoles = (
   roles: string[], // Vai trò được phép
   table: Table, // Bảng cơ sở dữ liệu
@@ -452,4 +489,32 @@ export const resetPassword = CatchAsync(async (req, res, next) => {
     status: "success",
     token,
   });
+});
+
+export const updatePassword = CatchAsync(async (req, res, next) => {
+  const { passwordCurrent, password } = req.body;
+
+  const user = (
+    await db
+      .select()
+      .from(users)
+      .where(eq(users.id, (req as any).user.id))
+  )[0];
+
+  const isCorrect = await bcrypt.compareSync(passwordCurrent, user.password);
+
+  if (!isCorrect)
+    return next(new AppError("Your current password is wrong", 201));
+
+  const hashPass = await bcrypt.hashSync(password, 12);
+
+  const userId = (
+    await db
+      .update(users)
+      .set({ password: hashPass })
+      .where(eq(users.id, (req as any).user.id))
+      .returning()
+  )[0].id;
+
+  createSignToken(userId, 200, res);
 });
