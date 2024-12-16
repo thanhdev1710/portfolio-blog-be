@@ -159,6 +159,14 @@ function hashToken(token: string) {
 function createSignToken(id: number, statusCode: number, res: Response) {
   const token = signJWT(id);
 
+  res.cookie("jwt", token, {
+    maxAge: Number(process.env.COOKIE_MAX_AGE),
+    secure: true,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
   res.status(statusCode).json({
     status: "success",
     token,
@@ -199,12 +207,7 @@ export const login = CatchAsync(async (req, res, next) => {
     const isCorrect = await bcrypt.compareSync(password, userPassword);
 
     if (isCorrect) {
-      const token = signJWT(userId);
-
-      return res.status(200).json({
-        status: "success",
-        token,
-      });
+      createSignToken(userId, 200, res);
     } else {
       return next(new AppError("Invalid Password.", 401));
     }

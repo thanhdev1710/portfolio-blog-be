@@ -68,7 +68,7 @@ export const users = pgTable("users", {
 export const postSections = pgTable("post_sections", {
 	id: serial().primaryKey().notNull(),
 	postId: integer("post_id").notNull(),
-	title: varchar({ length: 255 }),
+	title: varchar({ length: 50 }).notNull(),
 	content: text().notNull(),
 	imageUrl: text("image_url"),
 	altText: varchar("alt_text", { length: 255 }),
@@ -92,7 +92,7 @@ export const likes = pgTable("likes", {
 	userId: integer("user_id").notNull(),
 	postId: integer("post_id"),
 	commentId: integer("comment_id"),
-	status: char({ length: 7 }).default('like'),
+	status: varchar({ length: 7 }).default('like'),
 }, (table) => {
 	return {
 		fkLikesUser: foreignKey({
@@ -100,21 +100,26 @@ export const likes = pgTable("likes", {
 			foreignColumns: [users.id],
 			name: "fk_likes_user"
 		}).onDelete("cascade"),
+		fkLikesPost: foreignKey({
+			columns: [table.postId],
+			foreignColumns: [posts.id],
+			name: "fk_likes_post"
+		}).onDelete("cascade"),
 		fkLikesComment: foreignKey({
 			columns: [table.commentId],
 			foreignColumns: [comments.id],
 			name: "fk_likes_comment"
 		}).onDelete("cascade"),
 		likesUnique: unique("likes_unique").on(table.userId, table.postId, table.commentId),
-		likesStatusCheck: check("likes_status_check", sql`status = ANY (ARRAY['like'::bpchar, 'angry'::bpchar, 'sad'::bpchar, 'love'::bpchar, 'wow'::bpchar, 'haha'::bpchar])`),
-		likesCheck: check("likes_check", sql`((post_id IS NOT NULL) AND (comment_id IS NULL)) OR ((post_id IS NULL) AND (comment_id IS NOT NULL))`),
+		likesCheck: check("likes_check", sql`(COALESCE(((post_id)::boolean)::integer, 0) + COALESCE(((comment_id)::boolean)::integer, 0)) = 1`),
+		likesStatusCheck: check("likes_status_check", sql`(status)::bpchar = ANY (ARRAY['like'::bpchar, 'dislike'::bpchar])`),
 	}
 });
 
 export const posts = pgTable("posts", {
 	id: serial().primaryKey().notNull(),
-	title: varchar({ length: 100 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
+	title: varchar({ length: 50 }).notNull(),
+	slug: varchar({ length: 100 }).notNull(),
 	content: text().notNull(),
 	summary: text().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
@@ -122,6 +127,7 @@ export const posts = pgTable("posts", {
 	status: char({ length: 7 }).default('public'),
 	views: integer().default(0),
 	userId: integer("user_id").notNull(),
+	imageUrl: text("image_url"),
 }, (table) => {
 	return {
 		fkPostsUsers: foreignKey({

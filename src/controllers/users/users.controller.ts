@@ -4,8 +4,22 @@ import { db, pool } from "../../db/db";
 import AppError from "../../utils/error/AppError";
 import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
+import { filterObj } from "../../utils/utils";
 
+// TODO: CHỈNH THÀNH CẬP NHẬT TẤT CẢ
 const updateUserSchema = z
+  .object({
+    name: z.string().min(10).max(100).optional().nullable(),
+    image: z.string().optional().nullable(),
+  })
+  .refine(
+    (data) => !(data.name == null && data.image == null), // Không cho phép cả hai đều rỗng
+    {
+      message: "At least one of 'name' or 'image' must be provided.",
+    }
+  );
+
+const updateMeSchema = z
   .object({
     name: z.string().min(10).max(100).optional().nullable(),
     image: z.string().optional().nullable(),
@@ -28,12 +42,49 @@ export const validationUpdateUser = CatchAsync(async (req, res, next) => {
   next();
 });
 
+export const validationUpdateMe = CatchAsync(async (req, res, next) => {
+  updateMeSchema.parse(req.body);
+
+  next();
+});
+
 export const validationUpdateRole = CatchAsync(async (req, res, next) => {
   updateRoleSchema.parse(req.body);
 
   next();
 });
 
+export const updateMe = CatchAsync(async (req, res, next) => {
+  const { id } = (req as any).user;
+
+  // Prepare the update values
+  const updates: Record<string, any> = filterObj(req.body, ["name", "image"]);
+
+  // Update the user in the database
+  const updatedUser = await db
+    .update(users)
+    .set(updates)
+    .where(eq(users.id, Number(id)))
+    .returning(); // Retrieve the updated user
+
+  if (updatedUser.length === 0) {
+    return next(new AppError("User not found.", 404)); // Handle user not found
+  }
+
+  res.status(200).json(updatedUser[0]); // Respond with the updated user data
+});
+
+export const deleteMe = CatchAsync(async (req, res, next) => {
+  const { id } = (req as any).user;
+
+  const result = await db.delete(users).where(eq(users.id, Number(id)));
+
+  if (result.rowCount === 0) return next(new AppError("User not found.", 404));
+
+  res.status(204).send();
+});
+
+// TODO: CHỈNH THÀNH CẬP NHẬT TẤT CẢ
 export const updateUser = CatchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { name, image } = req.body;

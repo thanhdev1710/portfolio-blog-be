@@ -3,11 +3,10 @@ import { db } from "../../db/db";
 import { postSections } from "../../db/schema";
 import CatchAsync from "../../utils/error/CatchAsync";
 import { eq } from "drizzle-orm";
-import AppError from "../../utils/error/AppError";
 
 const schemaPostSections = z.object({
-  title: z.string().min(10).max(255).optional(),
-  altText: z.string().min(10).max(250).optional(),
+  title: z.string().max(50),
+  altText: z.string().max(255).optional(),
   content: z.string(),
   position: z.number(),
 });

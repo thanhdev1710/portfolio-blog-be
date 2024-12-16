@@ -9,7 +9,7 @@ import {
   protect,
   restrictToOwnerOrRoles,
 } from "../../controllers/auth/auth.controller";
-import { posts, users } from "../../db/schema";
+import { posts } from "../../db/schema";
 
 const router = express.Router({ mergeParams: true });
 

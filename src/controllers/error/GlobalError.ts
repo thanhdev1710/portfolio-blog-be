@@ -1,29 +1,35 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../../utils/error/AppError";
+import logger from "../../utils/logger";
 
 // Hàm xử lý lỗi Zod (validation lỗi từ thư viện Zod)
 const handleZodError = (err: AppError) => {
-  // Lấy giá trị lỗi từ AppError (trong trường hợp lỗi Zod)
+  logger.warn(`Validation error occurred: ${err.message}`); // Ghi lại lỗi validation từ Zod
   let tmpErr = Object.values(err)[0].map((e: any) => ({
-    message: e.message, // Lấy thông báo lỗi
-    path: e.path[0], // Lấy đường dẫn (thường là tên trường bị lỗi)
+    message: e.message,
+    path: e.path[0],
   }));
 
-  return new AppError("Validation failed for one or more fields", 400, tmpErr); // Trả về lỗi AppError với thông điệp và mã lỗi 400 (Bad Request)
+  return new AppError("Validation failed for one or more fields", 400, tmpErr);
 };
 
 const handleError23505 = (err: AppError) => {
+  logger.error(`PostgreSQL error 23505: ${err.message}`); // Ghi log lỗi vi phạm khóa duy nhất
   return new AppError(err.message, 400);
 };
 
 const handleError23502 = (err: AppError) => {
+  logger.error(`PostgreSQL error 23502: ${err.message}`); // Ghi log lỗi thiếu giá trị bắt buộc
   return new AppError(err.message, 400);
 };
 
 const handleJsonWebTokenError = () => {
+  logger.warn("Invalid token attempt!"); // Ghi log khi token không hợp lệ
   return new AppError("Invalid token. Please log in again!", 401);
 };
+
 const handleTokenExpiredError = () => {
+  logger.warn("Token expired!"); // Ghi log khi token hết hạn
   return new AppError("Your token has expired! Please log in again", 401);
 };
 
@@ -38,7 +44,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
     });
   } else {
     // Nếu lỗi là do hệ thống (ví dụ: lỗi server)
-    console.error(`ERROR 💥:`, err); // Log chi tiết lỗi
+    logger.error(`ERROR 💥:`, err); // Log chi tiết lỗi
     return res.status(500).json({
       status: "error",
       message: "Something went very wrong!", // Thông báo lỗi chung cho người dùng
@@ -67,7 +73,7 @@ export default function GlobalError(
   err.status = err.status || "error"; // Mặc định trạng thái là "error" nếu không có
 
   // Kiểm tra môi trường để xác định cách xử lý lỗi
-  if (process.env.NODE_ENV?.trim() === "dev") {
+  if (process.env.NODE_ENV?.trim() === "development") {
     // Nếu là môi trường development, gửi chi tiết lỗi cho client
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV?.trim() === "production") {

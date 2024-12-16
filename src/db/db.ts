@@ -1,6 +1,7 @@
 import * as schema from "./schema";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import logger from "../utils/logger";
 
 const sslConfig =
   process.env.NODE_ENV === "production"
@@ -10,7 +11,7 @@ const sslConfig =
 // Deploy thì bỏ sslConfig và không sử dụng là false
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false,
+  ssl: sslConfig,
   idleTimeoutMillis: process.env.PG_IDLE_TIMEOUT
     ? parseInt(process.env.PG_IDLE_TIMEOUT)
     : 30000,
@@ -23,11 +24,11 @@ export const pool = new Pool({
 pool
   .connect()
   .then((client) => {
-    console.log("Database connected successfully");
+    logger.info("Database connected successfully");
     client.release(); // Giải phóng ngay lập tức
   })
   .catch((err) => {
-    console.error("Failed to connect to the database", err.stack || err);
+    logger.error("Failed to connect to the database", err.stack || err);
     // process.exit(1); // Thoát chương trình nếu không thể kết nối
   });
 
@@ -36,8 +37,8 @@ export const db = drizzle({ client: pool, schema });
 export async function closePool() {
   try {
     await pool.end(); // Đóng tất cả kết nối trong pool
-    console.log("Pool closed");
+    logger.info("Pool closed");
   } catch (err: any) {
-    console.error("Error closing pool", err.stack || err);
+    logger.error("Error closing pool", err.stack || err);
   }
 }

@@ -1,8 +1,11 @@
 import express from "express";
 import {
+  deleteMe,
   deleteUser,
+  updateMe,
   updateRole,
   updateUser,
+  validationUpdateMe,
   validationUpdateRole,
   validationUpdateUser,
 } from "../../controllers/users/users.controller";
@@ -12,7 +15,6 @@ import {
   protect,
   resetPassword,
   restrictTo,
-  restrictToOwnerOrRoles,
   signup,
   updatePassword,
   validationCreateUser,
@@ -35,22 +37,16 @@ router
   .route("/updatePassword")
   .patch(protect, validationUpdatePasswordUser, updatePassword);
 
+router.route("/updateMe").patch(protect, validationUpdateMe, updateMe);
+router.route("/deleteMe").delete(protect, deleteMe);
+
 router
   .route("/updateRole")
   .post(protect, restrictTo(["admin"]), validationUpdateRole, updateRole);
 
 router
   .route("/:id")
-  .put(
-    protect,
-    restrictToOwnerOrRoles(["admin"], users, users.id, users.id),
-    validationUpdateUser,
-    updateUser
-  )
-  .delete(
-    protect,
-    restrictToOwnerOrRoles(["admin"], users, users.id, users.id),
-    deleteUser
-  );
+  .put(protect, restrictTo(["admin"]), validationUpdateUser, updateUser)
+  .delete(protect, restrictTo(["admin"]), deleteUser);
 
 export default router;
