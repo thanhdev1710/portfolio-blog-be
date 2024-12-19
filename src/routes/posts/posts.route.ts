@@ -13,6 +13,7 @@ import {
   restrictToOwnerOrRoles,
 } from "../../controllers/auth/auth.controller";
 import { posts } from "../../db/schema";
+import { recordView } from "../../controllers/view/view.controller";
 const router = express.Router();
 
 router
@@ -36,6 +37,6 @@ router
     deletePost
   );
 
-router.route("/:slug").get(getPostBySlug);
+router.route("/:slug").get(recordView, getPostBySlug);
 
 export default router;

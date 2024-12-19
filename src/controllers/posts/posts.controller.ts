@@ -63,7 +63,14 @@ export const getAllPost = CatchAsync(async (req, res, next) => {
       imageUser: users.image,
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"), // Lấy tất cả các tag liên quan
       countView: posts.views,
-      countLike: countDistinct(likes.id),
+      countLike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)`.as(
+          "countLike"
+        ),
+      countDislike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)`.as(
+          "countDislike"
+        ),
     })
     .from(posts)
     .innerJoin(users, eq(users.id, posts.userId))
@@ -123,7 +130,14 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
       imageUser: users.image,
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"),
       countView: posts.views,
-      countLike: countDistinct(likes.id),
+      countLike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)`.as(
+          "countLike"
+        ),
+      countDislike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)`.as(
+          "countDislike"
+        ),
     })
     .from(posts)
     .where(eq(posts.slug, slug))
