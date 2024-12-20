@@ -17,7 +17,7 @@ import logger from "./utils/logger";
 // Cấu hình CORS: Cho phép các nguồn cụ thể (Vercel và localhost)
 const corsOptions: CorsOptions = {
   origin: [process.env.ORIGIN!, "http://localhost:3000"], // Định nghĩa các nguồn gốc được phép
-  methods: "GET,POST,PUT,DELETE", // Các phương thức HTTP được phép
+  methods: "GET,POST,PUT,PATCH,DELETE", // Các phương thức HTTP được phép
   allowedHeaders: "Content-Type,Authorization", // Các header được phép
   credentials: true, // Cho phép cookies đi kèm với các yêu cầu CORS
   preflightContinue: false, // Không tiếp tục gửi yêu cầu OPTIONS sau khi preflight
@@ -100,6 +100,10 @@ app.use(`${URL_API}/posts/:id/sections`, routerPostSections); // Định nghĩa 
 app.use(`${URL_API}/users`, routerUsers); // Định nghĩa route cho users
 app.use(`${URL_API}/hashtags`, routerHashtags);
 app.use(`${URL_API}/like`, routerLike);
+
+app.get(`${URL_API}/cookie`, (req: Request, res: Response) => {
+  res.cookie("name", "express").send("Cookie set");
+});
 
 // Route catch-all: Trả lỗi nếu URL không tồn tại
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

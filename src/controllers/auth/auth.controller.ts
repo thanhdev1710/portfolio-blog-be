@@ -165,6 +165,7 @@ function createSignToken(id: number, statusCode: number, res: Response) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    priority: "high",
   });
 
   res.status(statusCode).json({

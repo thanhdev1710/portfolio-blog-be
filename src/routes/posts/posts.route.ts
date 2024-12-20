@@ -37,6 +37,7 @@ router
     deletePost
   );
 
-router.route("/:slug").get(recordView, getPostBySlug);
+router.route("/:slug").patch(recordView);
+router.route("/:slug").get(getPostBySlug);
 
 export default router;

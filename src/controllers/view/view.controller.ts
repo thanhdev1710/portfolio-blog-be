@@ -3,7 +3,6 @@ import { db } from "../../db/db";
 import { posts } from "../../db/schema";
 import CatchAsync from "../../utils/error/CatchAsync";
 import AppError from "../../utils/error/AppError";
-import { parse } from "cookie";
 
 export const recordView = CatchAsync(async (req, res, next) => {
   const { slug } = req.params;
@@ -15,13 +14,13 @@ export const recordView = CatchAsync(async (req, res, next) => {
     return next(new AppError("Post not found.", 404));
   }
 
-  // Lấy cookie từ headers
-  const cookies = parse(req.headers.cookie || "");
-  const viewedPosts = cookies.viewedPosts ? cookies.viewedPosts.split(",") : [];
+  const viewedPosts = req.cookies.viewedPosts
+    ? req.cookies.viewedPosts.split(",")
+    : [];
 
   // Nếu bài viết đã được xem, không cập nhật lượt xem
   if (viewedPosts.includes(slug)) {
-    return next(); // Không làm gì nếu đã xem
+    return res.status(200).send("OK");
   }
 
   // Cập nhật lượt xem
@@ -31,13 +30,14 @@ export const recordView = CatchAsync(async (req, res, next) => {
     .where(eq(posts.slug, slug));
 
   // Lưu bài viết đã xem vào cookies
-
   viewedPosts.push(slug);
 
   res.cookie("viewedPosts", viewedPosts.join(","), {
     maxAge: 86400000,
     httpOnly: true,
+    secure: true,
+    sameSite: "lax",
   });
 
-  next();
+  res.status(200).send("OK");
 });
