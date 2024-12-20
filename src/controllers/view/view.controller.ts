@@ -31,7 +31,9 @@ export const recordView = CatchAsync(async (req, res, next) => {
     .where(eq(posts.slug, slug));
 
   // Lưu bài viết đã xem vào cookies
+
   viewedPosts.push(slug);
+
   res.cookie("viewedPosts", viewedPosts.join(","), {
     maxAge: 86400000,
     httpOnly: true,

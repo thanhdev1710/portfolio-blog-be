@@ -3,10 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import logger from "../utils/logger";
 
-const sslConfig =
-  process.env.NODE_ENV === "production"
-    ? { rejectUnauthorized: true } // Bật SSL trong môi trường production
-    : false;
+const sslConfig = false;
 
 // Deploy thì bỏ sslConfig và không sử dụng là false
 export const pool = new Pool({

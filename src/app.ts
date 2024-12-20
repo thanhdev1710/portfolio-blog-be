@@ -5,7 +5,7 @@ import routerUsers from "./routes/users/users.route";
 import routerEmail from "./routes/email/email.route";
 import routerHashtags from "./routes/hashtags/hashtags.route";
 import routerLike from "./routes/likes/like.route";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import GlobalError from "./controllers/error/GlobalError";
 import AppError from "./utils/error/AppError";
 import cookieParser from "cookie-parser";
@@ -15,7 +15,7 @@ import xss, { IFilterXSSOptions } from "xss";
 import logger from "./utils/logger";
 
 // Cấu hình CORS: Cho phép các nguồn cụ thể (Vercel và localhost)
-const corsOptions = {
+const corsOptions: CorsOptions = {
   origin: [process.env.ORIGIN!, "http://localhost:3000"], // Định nghĩa các nguồn gốc được phép
   methods: "GET,POST,PUT,DELETE", // Các phương thức HTTP được phép
   allowedHeaders: "Content-Type,Authorization", // Các header được phép

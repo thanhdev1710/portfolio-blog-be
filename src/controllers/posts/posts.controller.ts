@@ -64,11 +64,11 @@ export const getAllPost = CatchAsync(async (req, res, next) => {
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"), // Lấy tất cả các tag liên quan
       countView: posts.views,
       countLike:
-        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)`.as(
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)::int`.as(
           "countLike"
         ),
       countDislike:
-        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)`.as(
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)::int`.as(
           "countDislike"
         ),
     })
@@ -131,11 +131,11 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"),
       countView: posts.views,
       countLike:
-        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)`.as(
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)::int`.as(
           "countLike"
         ),
       countDislike:
-        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)`.as(
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)::int`.as(
           "countDislike"
         ),
     })
