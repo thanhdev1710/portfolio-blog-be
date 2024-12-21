@@ -33,7 +33,7 @@ export const recordView = CatchAsync(async (req, res, next) => {
   viewedPosts.push(slug);
 
   res.cookie("viewedPosts", viewedPosts.join(","), {
-    maxAge: 86400000,
+    maxAge: 12 * 60 * 60 * 1000,
     httpOnly: true,
     secure: true,
     sameSite: "lax",

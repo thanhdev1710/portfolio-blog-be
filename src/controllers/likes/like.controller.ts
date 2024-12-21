@@ -55,13 +55,21 @@ const handleLike = async (
 
     if (currentLike[0].status === status) {
       await db.delete(likes).where(eq(likes.id, currentLike[0].id));
-      return { message: `${status} removed.` };
+      return {
+        message: `${
+          status === "like" ? "Bỏ thích bài viết" : "Bỏ không thích bài viết"
+        }.`,
+      };
     } else {
       await db
         .update(likes)
         .set({ status })
         .where(eq(likes.id, currentLike[0].id));
-      return { message: `${status} updated.` };
+      return {
+        message: `${
+          status === "like" ? "Thích bài viết" : "Không thích bài viết"
+        }.`,
+      };
     }
   } else {
     // Nếu chưa like thì thêm mới
@@ -70,7 +78,11 @@ const handleLike = async (
       [idField]: id,
       status,
     });
-    return { message: `${status} added.` };
+    return {
+      message: `${
+        status === "like" ? "Thích bài viết" : "Không thích bài viết"
+      }.`,
+    };
   }
 };
 
