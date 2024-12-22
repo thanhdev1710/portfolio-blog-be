@@ -63,7 +63,7 @@ export const updateSectionOrder = CatchAsync(async (req, res, next) => {
     const updates = sections.map((sec) =>
       tx
         .update(postSections)
-        .set({ position: sec.position })
+        .set({ position: sec.position, updatedAt: new Date().toISOString() })
         .where(eq(postSections.id, sec.id))
     );
     await Promise.all(updates);

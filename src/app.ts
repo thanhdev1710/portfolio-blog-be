@@ -6,6 +6,7 @@ import routerEmail from "./routes/email/email.route";
 import routerHashtags from "./routes/hashtags/hashtags.route";
 import routerLike from "./routes/likes/like.route";
 import routerBookmark from "./routes/bookmarks/bookmark.route";
+import routerComment from "./routes/comments/comment.route";
 import cors, { CorsOptions } from "cors";
 import GlobalError from "./controllers/error/GlobalError";
 import AppError from "./utils/error/AppError";
@@ -102,6 +103,7 @@ app.use(`${URL_API}/users`, routerUsers); // Định nghĩa route cho users
 app.use(`${URL_API}/hashtags`, routerHashtags);
 app.use(`${URL_API}/like`, routerLike);
 app.use(`${URL_API}/bookmark`, routerBookmark);
+app.use(`${URL_API}/comments`, routerComment);
 
 app.get(`${URL_API}/cookie`, (req: Request, res: Response) => {
   res.cookie("name", "express").send("Cookie set");
