@@ -1,4 +1,4 @@
-import { pgTable, unique, serial, varchar, timestamp, foreignKey, integer, index, text, check, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, unique, serial, varchar, foreignKey, integer, timestamp, index, text, check, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const roleEnum = pgEnum("role_enum", ['admin', 'author', 'editor', 'subscriber'])
@@ -7,12 +7,9 @@ export const roleEnum = pgEnum("role_enum", ['admin', 'author', 'editor', 'subsc
 export const categories = pgTable("categories", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 100 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => {
 	return {
 		categoriesNameKey: unique("categories_name_key").on(table.name),
-		categoriesSlugKey: unique("categories_slug_key").on(table.slug),
 	}
 });
 
@@ -30,7 +27,7 @@ export const comments = pgTable("comments", {
 	postId: integer("post_id").notNull(),
 	userId: integer("user_id").notNull(),
 	parentId: integer("parent_id"),
-	content: varchar({ length: 200 }).notNull(),
+	body: varchar({ length: 200 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => {
@@ -110,9 +107,10 @@ export const likes = pgTable("likes", {
 			foreignColumns: [comments.id],
 			name: "fk_likes_comment"
 		}).onDelete("cascade"),
-		likesUnique: unique("likes_unique").on(table.userId, table.postId, table.commentId),
+		likesCommentUnique: unique("likes_comment_unique").on(table.userId, table.commentId),
+		likesPostUnique: unique("likes_post_unique").on(table.userId, table.postId),
+		likesStatusCheck: check("likes_status_check", sql`(status)::text = ANY ((ARRAY['like'::character varying, 'dislike'::character varying])::text[])`),
 		likesCheck: check("likes_check", sql`(COALESCE(((post_id)::boolean)::integer, 0) + COALESCE(((comment_id)::boolean)::integer, 0)) = 1`),
-		likesStatusCheck: check("likes_status_check", sql`(status)::bpchar = ANY (ARRAY['like'::bpchar, 'dislike'::bpchar])`),
 	}
 });
 
@@ -128,6 +126,7 @@ export const posts = pgTable("posts", {
 	views: integer().default(0),
 	userId: integer("user_id").notNull(),
 	imageUrl: text("image_url"),
+	duration: integer().default(1).notNull(),
 }, (table) => {
 	return {
 		fkPostsUsers: foreignKey({
@@ -165,5 +164,25 @@ export const postsTags = pgTable("posts_tags", {
 			name: "fk_posts_tags_tags"
 		}).onDelete("cascade"),
 		pkPostsTags: primaryKey({ columns: [table.postId, table.tagId], name: "pk_posts_tags"}),
+	}
+});
+
+export const bookmarks = pgTable("bookmarks", {
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	userId: integer("user_id").notNull(),
+	postId: integer("post_id").notNull(),
+}, (table) => {
+	return {
+		fkBookmarksUsers: foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "fk_bookmarks_users"
+		}).onDelete("cascade"),
+		fkBookmarksPosts: foreignKey({
+			columns: [table.postId],
+			foreignColumns: [posts.id],
+			name: "fk_bookmarks_posts"
+		}).onDelete("cascade"),
+		pkBookmarks: primaryKey({ columns: [table.userId, table.postId], name: "pk_bookmarks"}),
 	}
 });

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { comments, users, posts, postSections, likes, categories, postsCategories, tags, postsTags } from "./schema";
+import { comments, users, posts, postSections, likes, categories, postsCategories, tags, postsTags, bookmarks } from "./schema";
 
 export const commentsRelations = relations(comments, ({one, many}) => ({
 	comment: one(comments, {
@@ -21,6 +21,7 @@ export const usersRelations = relations(users, ({many}) => ({
 	comments: many(comments),
 	likes: many(likes),
 	posts: many(posts),
+	bookmarks: many(bookmarks),
 }));
 
 export const postSectionsRelations = relations(postSections, ({one}) => ({
@@ -37,6 +38,7 @@ export const postsRelations = relations(posts, ({one, many}) => ({
 		fields: [posts.userId],
 		references: [users.id]
 	}),
+	bookmarks: many(bookmarks),
 }));
 
 export const likesRelations = relations(likes, ({one}) => ({
@@ -74,4 +76,15 @@ export const postsTagsRelations = relations(postsTags, ({one}) => ({
 
 export const tagsRelations = relations(tags, ({many}) => ({
 	postsTags: many(postsTags),
+}));
+
+export const bookmarksRelations = relations(bookmarks, ({one}) => ({
+	user: one(users, {
+		fields: [bookmarks.userId],
+		references: [users.id]
+	}),
+	post: one(posts, {
+		fields: [bookmarks.postId],
+		references: [posts.id]
+	}),
 }));
