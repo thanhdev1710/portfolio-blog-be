@@ -45,6 +45,8 @@ const handleLike = async (
     and(eq(likes.userId, userId), eq(likes[idField], id))
   );
 
+  const title = isPost ? "bài viết" : "bình luận";
+
   if (likeExisting > 0) {
     // Nếu đã like thì kiểm tra trạng thái và gỡ like nếu giống trạng thái cũ
     const currentLike = await db
@@ -57,7 +59,7 @@ const handleLike = async (
       await db.delete(likes).where(eq(likes.id, currentLike[0].id));
       return {
         message: `${
-          status === "like" ? "Bỏ thích bài viết" : "Bỏ không thích bài viết"
+          status === "like" ? "Bỏ thích " + title : "Bỏ không thích " + title
         }.`,
       };
     } else {
@@ -67,7 +69,7 @@ const handleLike = async (
         .where(eq(likes.id, currentLike[0].id));
       return {
         message: `${
-          status === "like" ? "Thích bài viết" : "Không thích bài viết"
+          status === "like" ? "Thích " + title : "Không thích " + title
         }.`,
       };
     }
@@ -80,7 +82,7 @@ const handleLike = async (
     });
     return {
       message: `${
-        status === "like" ? "Thích bài viết" : "Không thích bài viết"
+        status === "like" ? "Thích " + title : "Không thích " + title
       }.`,
     };
   }

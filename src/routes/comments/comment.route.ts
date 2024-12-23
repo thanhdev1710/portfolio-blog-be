@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.route("/").post(protect, ValidateComment, createComment);
 
-router.route("/:postId").get(getCommentByPostId);
+router.route("/:postId/:viewerId").get(getCommentByPostId);
 
 router
   .route("/:id")

@@ -1,6 +1,6 @@
-import { eq, getTableColumns } from "drizzle-orm";
+import { asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { db } from "../../db/db";
-import { comments, users } from "../../db/schema";
+import { comments, likes, users } from "../../db/schema";
 import CatchAsync from "../../utils/error/CatchAsync";
 import { z } from "zod";
 import AppError from "../../utils/error/AppError";
@@ -68,7 +68,7 @@ export const updateComment = CatchAsync(async (req, res, next) => {
 });
 
 export const getCommentByPostId = CatchAsync(async (req, res, next) => {
-  const { postId } = req.params;
+  const { postId, viewerId } = req.params;
 
   if (!postId) {
     throw new AppError("Post id required!", 400);
@@ -79,10 +79,38 @@ export const getCommentByPostId = CatchAsync(async (req, res, next) => {
       ...getTableColumns(comments),
       user_name: users.name,
       user_img: users.image,
+      countLike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)::int`.as(
+          "countLike"
+        ),
+      countDislike:
+        sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.id} END)::int`.as(
+          "countDislike"
+        ),
+      likeUserIds: sql`
+      array_agg(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.userId} END)
+    `.as("likeUserIds"),
+      dislikeUserIds: sql`
+      array_agg(DISTINCT CASE WHEN ${likes.status} = 'dislike' THEN ${likes.userId} END)
+    `.as("dislikeUserIds"),
+      isViewer: sql`CASE WHEN ${comments.userId} = ${
+        Number(viewerId) || null
+      } THEN 1 ELSE 0 END`.as("isViewer"),
     })
     .from(comments)
+    .leftJoin(likes, eq(likes.commentId, comments.id))
     .innerJoin(users, eq(users.id, comments.userId))
-    .where(eq(comments.postId, Number(postId)));
+    .where(eq(comments.postId, Number(postId)))
+    .groupBy(comments.id, users.id)
+    .orderBy(
+      desc(
+        sql`CASE WHEN ${comments.userId} = ${
+          Number(viewerId) || null
+        } THEN 1 ELSE 0 END`
+      ),
+      sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END) DESC`, // Then by likes
+      asc(comments.updatedAt)
+    );
 
   res.status(200).json({
     status: "success",

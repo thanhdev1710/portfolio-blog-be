@@ -7,6 +7,7 @@ import CatchAsync from "../../utils/error/CatchAsync";
 import {
   bookmarks,
   categories,
+  comments,
   likes,
   posts,
   postsCategories,
@@ -77,6 +78,7 @@ export const getAllPost = CatchAsync(async (req, res, next) => {
       categories: sql`ARRAY_AGG(DISTINCT ${categories.name})`.as("categories"), // Lấy tất cả các tag liên quan
       countView: posts.views,
       countBookmark: sql`COUNT(DISTINCT ${bookmarks.userId})`,
+      countComment: sql`COUNT(DISTINCT ${comments.id})`,
       countLike:
         sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)::int`.as(
           "countLike"
@@ -89,6 +91,7 @@ export const getAllPost = CatchAsync(async (req, res, next) => {
     .from(posts)
     .innerJoin(users, eq(users.id, posts.userId))
     .leftJoin(likes, eq(likes.postId, posts.id))
+    .leftJoin(comments, eq(comments.postId, posts.id))
     .leftJoin(bookmarks, eq(bookmarks.postId, posts.id))
     .leftJoin(postsTags, eq(postsTags.postId, posts.id))
     .leftJoin(tags, eq(tags.id, postsTags.tagId))
@@ -152,6 +155,7 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
       categories: sql`ARRAY_AGG(DISTINCT ${categories.name})`.as("categories"), // Lấy tất cả các tag liên quan
       countView: posts.views,
       countBookmark: sql`COUNT(DISTINCT ${bookmarks.userId})`,
+      countComment: sql`COUNT(DISTINCT ${comments.id})`,
       countLike:
         sql`COUNT(DISTINCT CASE WHEN ${likes.status} = 'like' THEN ${likes.id} END)::int`.as(
           "countLike"
@@ -166,6 +170,7 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
     .innerJoin(users, eq(users.id, posts.userId))
     .leftJoin(postSections, eq(postSections.postId, posts.id))
     .leftJoin(bookmarks, eq(bookmarks.postId, posts.id))
+    .leftJoin(comments, eq(comments.postId, posts.id))
     .leftJoin(likes, eq(likes.postId, posts.id))
     .leftJoin(postsTags, eq(postsTags.postId, posts.id))
     .leftJoin(tags, eq(tags.id, postsTags.tagId))

@@ -9,7 +9,16 @@ import { filterObj } from "../../utils/utils";
 // TODO: CHỈNH THÀNH CẬP NHẬT TẤT CẢ
 const updateUserSchema = z
   .object({
-    name: z.string().min(10).max(100).optional().nullable(),
+    name: z
+      .string()
+      .min(1)
+      .max(20)
+      .regex(
+        /^[a-zA-Z0-9]*$/,
+        "Name must not contain spaces or special characters"
+      ) // Chỉ cho phép chữ cái và số
+      .optional()
+      .nullable(),
     image: z.string().optional().nullable(),
   })
   .refine(
@@ -21,7 +30,16 @@ const updateUserSchema = z
 
 const updateMeSchema = z
   .object({
-    name: z.string().min(10).max(100).optional().nullable(),
+    name: z
+      .string()
+      .min(1)
+      .max(20)
+      .regex(
+        /^[a-zA-Z0-9]*$/,
+        "Name must not contain spaces or special characters"
+      ) // Chỉ cho phép chữ cái và số
+      .optional()
+      .nullable(),
     image: z.string().optional().nullable(),
   })
   .refine(

@@ -14,7 +14,14 @@ import sendEmail from "../../utils/email";
 
 const createUserSchema = z
   .object({
-    name: z.string().min(10).max(100),
+    name: z
+      .string()
+      .min(1)
+      .max(20)
+      .regex(
+        /^[a-zA-Z0-9]*$/,
+        "Name must not contain spaces or special characters"
+      ),
     email: z.string().email(),
     password: z
       .string()
