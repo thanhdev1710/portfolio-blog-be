@@ -1,6 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import routerPosts from "./routes/posts/posts.route";
-import routerPostSections from "./routes/posts/post_sections.route";
 import routerUsers from "./routes/users/users.route";
 import routerEmail from "./routes/email/email.route";
 import routerHashtags from "./routes/hashtags/hashtags.route";
@@ -98,7 +97,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Routes: Định nghĩa các route cho các API
 app.use(`${URL_API}/email`, routerEmail); // Định nghĩa route cho email
 app.use(`${URL_API}/posts`, routerPosts); // Định nghĩa route cho posts
-app.use(`${URL_API}/posts/:id/sections`, routerPostSections); // Định nghĩa route cho post sections
 app.use(`${URL_API}/users`, routerUsers); // Định nghĩa route cho users
 app.use(`${URL_API}/hashtags`, routerHashtags);
 app.use(`${URL_API}/like`, routerLike);
