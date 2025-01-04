@@ -103,10 +103,6 @@ app.use(`${URL_API}/like`, routerLike);
 app.use(`${URL_API}/bookmark`, routerBookmark);
 app.use(`${URL_API}/comments`, routerComment);
 
-app.get(`${URL_API}/cookie`, (req: Request, res: Response) => {
-  res.cookie("name", "express").send("Cookie set");
-});
-
 // Route catch-all: Trả lỗi nếu URL không tồn tại
 app.all("*", (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404)); // Trả lỗi 404 nếu route không tồn tại

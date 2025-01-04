@@ -1,8 +1,34 @@
-import { pgTable, unique, serial, varchar, text, timestamp, foreignKey, check, integer, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, check, serial, varchar, text, integer, timestamp, char, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const roleEnum = pgEnum("role_enum", ['admin', 'author', 'editor', 'subscriber'])
 
+
+export const posts = pgTable("posts", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 50 }).notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	content: text().notNull(),
+	summary: text().notNull(),
+	duration: integer().default(1).notNull(),
+	image: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	status: char({ length: 7 }).default('public'),
+	views: integer().default(0),
+	userId: integer("user_id").notNull(),
+	fileId: varchar("file_id", { length: 50 }),
+}, (table) => {
+	return {
+		fkPostsUsers: foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "fk_posts_users"
+		}).onDelete("cascade"),
+		postsSlugKey: unique("posts_slug_key").on(table.slug),
+		postsStatusCheck: check("posts_status_check", sql`status = ANY (ARRAY['private'::bpchar, 'public'::bpchar])`),
+	}
+});
 
 export const users = pgTable("users", {
 	id: serial().primaryKey().notNull(),
@@ -14,34 +40,10 @@ export const users = pgTable("users", {
 	passwordResetToken: varchar("password_reset_token", { length: 255 }),
 	passwordResetExpires: timestamp("password_reset_expires", { withTimezone: true, mode: 'string' }),
 	passwordChangedAt: timestamp("password_changed_at", { withTimezone: true, mode: 'string' }),
+	fileId: varchar("file_id", { length: 50 }),
 }, (table) => {
 	return {
 		usersEmailKey: unique("users_email_key").on(table.email),
-	}
-});
-
-export const posts = pgTable("posts", {
-	id: serial().primaryKey().notNull(),
-	title: varchar({ length: 50 }).notNull(),
-	slug: varchar({ length: 100 }).notNull(),
-	content: text().notNull(),
-	summary: text().notNull(),
-	duration: integer().default(1).notNull(),
-	imageUrl: text("image_url"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	status: char({ length: 7 }).default('public'),
-	views: integer().default(0),
-	userId: integer("user_id").notNull(),
-}, (table) => {
-	return {
-		fkPostsUsers: foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "fk_posts_users"
-		}).onDelete("cascade"),
-		postsSlugKey: unique("posts_slug_key").on(table.slug),
-		postsStatusCheck: check("posts_status_check", sql`status = ANY (ARRAY['private'::bpchar, 'public'::bpchar])`),
 	}
 });
 

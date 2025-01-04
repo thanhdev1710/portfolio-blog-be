@@ -37,6 +37,14 @@ const postSchema = z.object({
 });
 
 export const validatePost = CatchAsync(async (req, res, next) => {
+  if (typeof req.body.tags === "string") {
+    req.body.tags = req.body.tags.split(",");
+  }
+
+  if (typeof req.body.categories === "string") {
+    req.body.categories = req.body.categories.split(",");
+  }
+
   postSchema.parse(req.body);
 
   next();
@@ -142,7 +150,7 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
       title: posts.title,
       summary: posts.summary,
       duration: posts.duration,
-      image: posts.imageUrl,
+      image: posts.image,
       content: posts.content,
       updatedAt: posts.updatedAt,
       status: posts.status,
@@ -207,7 +215,7 @@ export const createPost = CatchAsync(async (req, res, next) => {
         status,
         summary,
         title,
-        imageUrl: image,
+        image,
         userId: (req as any).user.id,
         slug: "",
       })
@@ -314,7 +322,7 @@ export const updatePost = CatchAsync(async (req, res, next) => {
         status,
         summary,
         title,
-        imageUrl: image,
+        image,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(posts.id, Number(id)))

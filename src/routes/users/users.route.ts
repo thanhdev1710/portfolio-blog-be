@@ -23,8 +23,9 @@ import {
 } from "../../controllers/auth/auth.controller";
 import { users } from "../../db/schema";
 import {
-  resizeUserPhoto,
-  uploadUserPhoto,
+  uploadToImageKit,
+  uploadImage,
+  resizeImage,
 } from "../../controllers/upload/uploadImgUser";
 
 const router = express.Router();
@@ -46,8 +47,9 @@ router
   .patch(
     protect,
     validationUpdateMe,
-    uploadUserPhoto,
-    resizeUserPhoto,
+    uploadImage,
+    resizeImage(true),
+    uploadToImageKit("/user-img"),
     updateMe
   );
 router.route("/deleteMe").delete(protect, deleteMe);

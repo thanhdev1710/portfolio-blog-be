@@ -23,35 +23,56 @@ const uploadImgUser = multer({
   fileFilter,
 });
 
-export const uploadUserPhoto = uploadImgUser.single("image");
+export const uploadImage = uploadImgUser.single("image");
 
-export const resizeUserPhoto = CatchAsync(async (req, res, next) => {
-  if (!req.file) return next();
+export const resizeImage = (
+  isResize: boolean,
+  withSize: number = 100,
+  heightSize: number = 100
+) => {
+  return CatchAsync(async (req, res, next) => {
+    if (!req.file) return next();
 
-  const filename = `user-${(req as any).user.id}-${Date.now()}.avif`;
+    if (isResize) {
+      req.file.buffer = await sharp(req.file.buffer)
+        .resize(withSize, heightSize)
+        .toFormat("avif")
+        .avif({ quality: 75 })
+        .toBuffer();
+    } else {
+      req.file.buffer = await sharp(req.file.buffer)
+        .toFormat("avif")
+        .avif({ quality: 75 })
+        .toBuffer();
+    }
 
-  const buffer = await sharp(req.file.buffer)
-    .resize(100, 100)
-    .toFormat("avif")
-    .avif({ quality: 75 })
-    .toBuffer();
-
-  const uploadedImage = await imagekit.upload({
-    file: buffer, // Buffer của ảnh đã xử lý
-    fileName: filename, // Tên file trên ImageKit
-    folder: "/user-img", // Thư mục trên ImageKit (nếu muốn tổ chức)
-    useUniqueFileName: false, // Sử dụng tên file duy nhất
+    next();
   });
+};
 
-  try {
-    if ((req as any).user.file_id)
-      await imagekit.deleteFile((req as any).user.file_id);
-  } catch (error) {
-    console.log(error);
-  }
+export const uploadToImageKit = (folder: string) => {
+  return CatchAsync(async (req, res, next) => {
+    if (!req.file) return next();
 
-  req.body.fileId = uploadedImage.fileId;
-  req.body.image = uploadedImage.url;
+    const filename = `${folder}-${(req as any).user.id}-${Date.now()}.avif`;
 
-  next();
-});
+    const uploadedImage = await imagekit.upload({
+      file: req.file.buffer, // Buffer của ảnh đã xử lý
+      fileName: filename, // Tên file trên ImageKit
+      folder, // Thư mục trên ImageKit (nếu muốn tổ chức)
+      useUniqueFileName: false, // Sử dụng tên file duy nhất
+    });
+
+    try {
+      if ((req as any).user.file_id)
+        await imagekit.deleteFile((req as any).user.file_id);
+    } catch (error) {
+      console.log(error);
+    }
+
+    req.body.fileId = uploadedImage.fileId;
+    req.body.image = uploadedImage.url;
+
+    next();
+  });
+};
