@@ -22,6 +22,10 @@ import {
   validationUpdatePasswordUser,
 } from "../../controllers/auth/auth.controller";
 import { users } from "../../db/schema";
+import {
+  resizeUserPhoto,
+  uploadUserPhoto,
+} from "../../controllers/upload/uploadImgUser";
 
 const router = express.Router();
 
@@ -37,7 +41,15 @@ router
   .route("/updatePassword")
   .patch(protect, validationUpdatePasswordUser, updatePassword);
 
-router.route("/updateMe").patch(protect, validationUpdateMe, updateMe);
+router
+  .route("/updateMe")
+  .patch(
+    protect,
+    validationUpdateMe,
+    uploadUserPhoto,
+    resizeUserPhoto,
+    updateMe
+  );
 router.route("/deleteMe").delete(protect, deleteMe);
 
 router

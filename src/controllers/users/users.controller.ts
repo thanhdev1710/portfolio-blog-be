@@ -1,6 +1,6 @@
 import { z } from "zod";
 import CatchAsync from "../../utils/error/CatchAsync";
-import { db, pool } from "../../db/db";
+import { db } from "../../db/db";
 import AppError from "../../utils/error/AppError";
 import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
@@ -40,7 +40,7 @@ const updateMeSchema = z
       ) // Chỉ cho phép chữ cái và số
       .optional()
       .nullable(),
-    image: z.string().optional().nullable(),
+    image: z.string().optional().default("/images/user-default.png"),
   })
   .refine(
     (data) => !(data.name == null && data.image == null), // Không cho phép cả hai đều rỗng
@@ -61,7 +61,7 @@ export const validationUpdateUser = CatchAsync(async (req, res, next) => {
 });
 
 export const validationUpdateMe = CatchAsync(async (req, res, next) => {
-  updateMeSchema.parse(req.body);
+  req.body = updateMeSchema.parse(req.body);
 
   next();
 });
@@ -76,7 +76,11 @@ export const updateMe = CatchAsync(async (req, res, next) => {
   const { id } = (req as any).user;
 
   // Prepare the update values
-  const updates: Record<string, any> = filterObj(req.body, ["name", "image"]);
+  const updates: Record<string, any> = filterObj(req.body, [
+    "name",
+    "image",
+    "fileId",
+  ]);
 
   // Update the user in the database
   const updatedUser = await db

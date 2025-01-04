@@ -55,6 +55,7 @@ export const users = pgTable("users", {
 	passwordChangedAt: timestamp("password_changed_at", { withTimezone: true, mode: 'string' }),
 	passwordResetToken: varchar("password_reset_token", { length: 255 }),
 	passwordResetExpires: timestamp("password_reset_expires", { withTimezone: true, mode: 'string' }),
+	fileId: varchar("file_id", { length: 64 }),
 }, (table) => {
 	return {
 		nameIdx: index("users_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
