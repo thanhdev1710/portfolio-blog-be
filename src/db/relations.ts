@@ -1,5 +1,24 @@
 import { relations } from "drizzle-orm/relations";
-import { comments, users, posts, postSections, likes, categories, postsCategories, tags, postsTags, bookmarks } from "./schema";
+import { users, posts, comments, likes, postsCategories, categories, postsTags, tags, bookmarks } from "./schema";
+
+export const postsRelations = relations(posts, ({one, many}) => ({
+	user: one(users, {
+		fields: [posts.userId],
+		references: [users.id]
+	}),
+	comments: many(comments),
+	likes: many(likes),
+	postsCategories: many(postsCategories),
+	postsTags: many(postsTags),
+	bookmarks: many(bookmarks),
+}));
+
+export const usersRelations = relations(users, ({many}) => ({
+	posts: many(posts),
+	comments: many(comments),
+	likes: many(likes),
+	bookmarks: many(bookmarks),
+}));
 
 export const commentsRelations = relations(comments, ({one, many}) => ({
 	comment: one(comments, {
@@ -10,35 +29,15 @@ export const commentsRelations = relations(comments, ({one, many}) => ({
 	comments: many(comments, {
 		relationName: "comments_parentId_comments_id"
 	}),
+	post: one(posts, {
+		fields: [comments.postId],
+		references: [posts.id]
+	}),
 	user: one(users, {
 		fields: [comments.userId],
 		references: [users.id]
 	}),
 	likes: many(likes),
-}));
-
-export const usersRelations = relations(users, ({many}) => ({
-	comments: many(comments),
-	likes: many(likes),
-	posts: many(posts),
-	bookmarks: many(bookmarks),
-}));
-
-export const postSectionsRelations = relations(postSections, ({one}) => ({
-	post: one(posts, {
-		fields: [postSections.postId],
-		references: [posts.id]
-	}),
-}));
-
-export const postsRelations = relations(posts, ({one, many}) => ({
-	postSections: many(postSections),
-	likes: many(likes),
-	user: one(users, {
-		fields: [posts.userId],
-		references: [users.id]
-	}),
-	bookmarks: many(bookmarks),
 }));
 
 export const likesRelations = relations(likes, ({one}) => ({
@@ -57,6 +56,10 @@ export const likesRelations = relations(likes, ({one}) => ({
 }));
 
 export const postsCategoriesRelations = relations(postsCategories, ({one}) => ({
+	post: one(posts, {
+		fields: [postsCategories.postId],
+		references: [posts.id]
+	}),
 	category: one(categories, {
 		fields: [postsCategories.categoryId],
 		references: [categories.id]
@@ -68,6 +71,10 @@ export const categoriesRelations = relations(categories, ({many}) => ({
 }));
 
 export const postsTagsRelations = relations(postsTags, ({one}) => ({
+	post: one(posts, {
+		fields: [postsTags.postId],
+		references: [posts.id]
+	}),
 	tag: one(tags, {
 		fields: [postsTags.tagId],
 		references: [tags.id]

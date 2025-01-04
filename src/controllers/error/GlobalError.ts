@@ -54,6 +54,8 @@ const sendErrorProd = (err: AppError, res: Response) => {
 
 // Hàm xử lý lỗi trong môi trường development
 const sendErrorDev = (err: AppError, res: Response) => {
+  console.log("run");
+
   return res.status(err.statusCode).json({
     status: err.status,
     error: err, // Log chi tiết lỗi

@@ -11,7 +11,6 @@ import {
   likes,
   posts,
   postsCategories,
-  postSections,
   postsTags,
   tags,
   users,
@@ -168,7 +167,6 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
     .from(posts)
     .where(eq(posts.slug, slug))
     .innerJoin(users, eq(users.id, posts.userId))
-    .leftJoin(postSections, eq(postSections.postId, posts.id))
     .leftJoin(bookmarks, eq(bookmarks.postId, posts.id))
     .leftJoin(comments, eq(comments.postId, posts.id))
     .leftJoin(likes, eq(likes.postId, posts.id))

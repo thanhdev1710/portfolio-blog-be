@@ -20,18 +20,18 @@ import app from "./app";
 
 // Khởi chạy server trên cổng đã cấu hình
 const server = app.listen(port, () => {
-  logger.info(`Server is running at http://localhost:${port}`); // Log thông tin khởi động server
+  console.log(`Server is running at http://localhost:${port}`); // Log thông tin khởi động server
 });
 
 // Đảm bảo closePool() được gọi khi ứng dụng dừng
 process.on("SIGINT", async () => {
-  logger.info("Closing database connection..."); // Log thông tin đóng kết nối DB
+  console.log("Closing database connection..."); // Log thông tin đóng kết nối DB
   await closePool();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  logger.info("Closing database connection..."); // Log thông tin đóng kết nối DB
+  console.log("Closing database connection..."); // Log thông tin đóng kết nối DB
   await closePool();
   process.exit(0);
 });
