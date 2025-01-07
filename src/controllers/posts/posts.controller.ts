@@ -32,8 +32,8 @@ const postSchema = z.object({
   summary: z.string(),
   image: z.string().optional(),
   status: z.enum(["private", "public"]),
-  tags: z.array(z.string()),
-  categories: z.array(z.string()),
+  tags: z.array(z.string().max(20)),
+  categories: z.array(z.string().max(20)),
 });
 
 export const validatePost = CatchAsync(async (req, res, next) => {
@@ -80,6 +80,7 @@ export const getAllPost = CatchAsync(async (req, res, next) => {
       idUser: users.id,
       nameUser: users.name,
       emailUser: users.email,
+      roleUser: users.role,
       imageUser: users.image,
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"), // Lấy tất cả các tag liên quan
       categories: sql`ARRAY_AGG(DISTINCT ${categories.name})`.as("categories"), // Lấy tất cả các tag liên quan
@@ -157,6 +158,7 @@ export const getPostBySlug = CatchAsync(async (req, res, next) => {
       idUser: users.id,
       nameUser: users.name,
       emailUser: users.email,
+      roleUser: users.role,
       imageUser: users.image,
       tags: sql`ARRAY_AGG(DISTINCT ${tags.name})`.as("tags"),
       categories: sql`ARRAY_AGG(DISTINCT ${categories.name})`.as("categories"), // Lấy tất cả các tag liên quan

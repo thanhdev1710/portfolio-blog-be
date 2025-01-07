@@ -3,6 +3,7 @@ import routerPosts from "./routes/posts/posts.route";
 import routerUsers from "./routes/users/users.route";
 import routerEmail from "./routes/email/email.route";
 import routerHashtags from "./routes/hashtags/hashtags.route";
+import routerCategories from "./routes/categories/categories.route";
 import routerLike from "./routes/likes/like.route";
 import routerBookmark from "./routes/bookmarks/bookmark.route";
 import routerComment from "./routes/comments/comment.route";
@@ -58,6 +59,8 @@ app.use(
   })
 );
 
+app.set("view engine", "ejs");
+
 // Hàm làm sạch dữ liệu đầu vào, tránh tấn công XSS
 const cleanObject = (obj: any) => {
   if (typeof obj === "string") {
@@ -99,6 +102,7 @@ app.use(`${URL_API}/email`, routerEmail); // Định nghĩa route cho email
 app.use(`${URL_API}/posts`, routerPosts); // Định nghĩa route cho posts
 app.use(`${URL_API}/users`, routerUsers); // Định nghĩa route cho users
 app.use(`${URL_API}/hashtags`, routerHashtags);
+app.use(`${URL_API}/categories`, routerCategories);
 app.use(`${URL_API}/like`, routerLike);
 app.use(`${URL_API}/bookmark`, routerBookmark);
 app.use(`${URL_API}/comments`, routerComment);

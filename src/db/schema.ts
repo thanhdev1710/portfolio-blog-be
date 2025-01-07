@@ -47,21 +47,21 @@ export const users = pgTable("users", {
 	}
 });
 
-export const categories = pgTable("categories", {
-	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
-}, (table) => {
-	return {
-		categoriesNameKey: unique("categories_name_key").on(table.name),
-	}
-});
-
 export const tags = pgTable("tags", {
 	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 100 }).notNull(),
+	name: varchar({ length: 20 }).notNull(),
 }, (table) => {
 	return {
 		tagsNameKey: unique("tags_name_key").on(table.name),
+	}
+});
+
+export const categories = pgTable("categories", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 20 }).notNull(),
+}, (table) => {
+	return {
+		categoriesNameKey: unique("categories_name_key").on(table.name),
 	}
 });
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { randomBytes, createHash, verify } from "crypto";
+import { randomBytes, createHash } from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import CatchAsync from "../../utils/error/CatchAsync";
@@ -11,6 +11,16 @@ import { eq } from "drizzle-orm";
 import { users } from "../../db/schema";
 import { PgColumn } from "drizzle-orm/pg-core";
 import sendEmail from "../../utils/email";
+import { renderFile } from "ejs";
+import path from "path";
+
+interface TypeUser {
+  id: number;
+  name: string;
+  email: string;
+  image: string | null;
+  role: "admin" | "author" | "editor" | "subscriber" | null;
+}
 
 const createUserSchema = z
   .object({
@@ -116,7 +126,7 @@ export const validationUpdatePasswordUser = CatchAsync(
   }
 );
 
-const signJWT = (id: number) => {
+const signJWT = (user: TypeUser) => {
   if (!process.env.JWT_SECRET) {
     throw new AppError(
       "JWT_SECRET is not defined in environment variables.",
@@ -125,7 +135,7 @@ const signJWT = (id: number) => {
   }
 
   try {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+    return jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || "1h",
     });
   } catch (error) {
@@ -163,8 +173,8 @@ function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function createSignToken(id: number, statusCode: number, res: Response) {
-  const token = signJWT(id);
+function createSignToken(user: TypeUser, statusCode: number, res: Response) {
+  const token = signJWT(user);
 
   res.cookie("jwt", token, {
     maxAge: Number(process.env.COOKIE_MAX_AGE),
@@ -199,6 +209,21 @@ export const signup = CatchAsync(async (req, res, next) => {
 
 export const login = CatchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  console.log(email, password);
+
+  const rs = (
+    await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        password: users.password,
+        image: users.image,
+      })
+      .from(users)
+      .where(eq(email, users.email))
+  )[0];
 
   const sql = `
     SELECT id, password
@@ -211,11 +236,11 @@ export const login = CatchAsync(async (req, res, next) => {
   if (result.rowCount === 0) {
     return next(new AppError("Invalid email.", 401));
   } else {
-    const { id: userId, password: userPassword } = result.rows[0];
-    const isCorrect = await bcrypt.compareSync(password, userPassword);
+    const { email, id, name, password: userPassword, role, image } = rs;
+    const isCorrect = await bcrypt.compare(password, userPassword);
 
     if (isCorrect) {
-      createSignToken(userId, 200, res);
+      createSignToken({ email, id, name, role, image }, 200, res);
     } else {
       return next(new AppError("Invalid Password.", 401));
     }
@@ -348,88 +373,16 @@ export const forgotPassword = CatchAsync(async (req, res, next) => {
 
   const resetURL = `${process.env.ORIGIN}/forgot/${resetToken}`;
 
+  const templatePath = path.join(__dirname, "../../views/EmailForgotPass.ejs");
+
   // 5) Tạo thông điệp cho email
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Your Password</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f7f6;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    header h1 {
-      font-size: 2em;
-      color: #004a99;
-    }
-    .content {
-      font-size: 1.1em;
-      line-height: 1.6;
-      color: #555;
-      margin-bottom: 20px;
-    }
-    .button-container {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .button {
-      background-color: #004a99;
-      color: white;
-      padding: 12px 30px;
-      font-size: 1.2em;
-      border-radius: 5px;
-      text-decoration: none;
-      transition: background-color 0.3s;
-    }
-    .button:hover {
-      background-color: #003366;
-    }
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 0.9em;
-      color: #888;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Password Reset Request</h1>
-    </header>
-    <div class="content">
-      <p>Hi there,</p>
-      <p>We received a request to reset your password. If you didn't make this request, please ignore this email.</p>
-      <p>If you did request a password reset, click the button below to change your password:</p>
-    </div>
-    <div class="button-container">
-      <a style="color:white" href="${resetURL}" class="button">Reset Your Password</a>
-    </div>
-    <footer>
-      <p>If you have any issues, feel free to contact us.</p>
-      <p>&copy; 2024 ThanhDev. All rights reserved.</p>
-    </footer>
-  </div>
-</body>
-</html>
-`;
+  const html = await renderFile(
+    templatePath,
+    {
+      resetURL,
+    },
+    { async: true }
+  );
 
   try {
     await sendEmail({
@@ -492,9 +445,9 @@ export const resetPassword = CatchAsync(async (req, res, next) => {
     .where(eq(users.id, user.id))
     .returning();
 
-  const userUpdate = userUpdateQuery[0];
+  const { email, id, image, name, role } = userUpdateQuery[0];
 
-  const token = signJWT(userUpdate.id);
+  const token = signJWT({ email, id, image, name, role });
 
   res.status(200).json({
     status: "success",
@@ -512,14 +465,14 @@ export const updatePassword = CatchAsync(async (req, res, next) => {
       .where(eq(users.id, (req as any).user.id))
   )[0];
 
-  const isCorrect = await bcrypt.compareSync(passwordCurrent, user.password);
+  const isCorrect = await bcrypt.compare(passwordCurrent, user.password);
 
   if (!isCorrect)
     return next(new AppError("Your current password is wrong", 401));
 
-  const hashPass = await bcrypt.hashSync(password, 12);
+  const hashPass = await bcrypt.hash(password, 12);
 
-  const userId = (
+  const { email, id, image, name, role } = (
     await db
       .update(users)
       .set({
@@ -528,7 +481,7 @@ export const updatePassword = CatchAsync(async (req, res, next) => {
       })
       .where(eq(users.id, (req as any).user.id))
       .returning()
-  )[0].id;
+  )[0];
 
-  createSignToken(userId, 200, res);
+  createSignToken({ email, id, image, name, role }, 200, res);
 });

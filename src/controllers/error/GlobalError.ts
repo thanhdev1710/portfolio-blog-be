@@ -13,6 +13,11 @@ const handleZodError = (err: AppError) => {
   return new AppError("Validation failed for one or more fields", 400, tmpErr);
 };
 
+const handleErrorLimitMulter = (err: AppError) => {
+  logger.error(`Multer error!: ${err.message}`);
+  return new AppError(err.message, 400);
+};
+
 const handleError23505 = (err: AppError) => {
   logger.error(`PostgreSQL error 23505: ${err.message}`); // Ghi log lỗi vi phạm khóa duy nhất
   return new AppError(err.message, 400);
@@ -82,6 +87,7 @@ export default function GlobalError(
     if (err.name === "ZodError") error = handleZodError(err); // Xử lý lỗi Zod nếu có
     if (err.code === "23505") error = handleError23505(err);
     if (err.code === "23502") error = handleError23502(err);
+    if (err.name === "MulterError") error = handleErrorLimitMulter(err);
     if (err.name === "JsonWebTokenError") error = handleJsonWebTokenError();
     if (err.name === "TokenExpiredError") error = handleTokenExpiredError();
 

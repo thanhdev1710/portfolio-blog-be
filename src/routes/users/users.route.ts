@@ -21,7 +21,6 @@ import {
   validationResetPasswordUser,
   validationUpdatePasswordUser,
 } from "../../controllers/auth/auth.controller";
-import { users } from "../../db/schema";
 import {
   uploadToImageKit,
   uploadImage,

@@ -61,7 +61,6 @@ export const validationUpdateUser = CatchAsync(async (req, res, next) => {
 });
 
 export const validationUpdateMe = CatchAsync(async (req, res, next) => {
-  console.log(req.body);
   req.body = updateMeSchema.parse(req.body);
   next();
 });
