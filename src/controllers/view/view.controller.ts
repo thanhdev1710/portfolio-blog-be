@@ -23,8 +23,6 @@ export const recordView = CatchAsync(async (req, res, next) => {
     return res.status(200).send("OK");
   }
 
-  console.log("tang len");
-
   // Cập nhật lượt xem
   await db
     .update(posts)
