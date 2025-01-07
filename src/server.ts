@@ -1,3 +1,4 @@
+import "source-map-support/register"; // Thêm dòng này ở đầu file server.ts
 import { configDotenv } from "dotenv";
 configDotenv();
 
