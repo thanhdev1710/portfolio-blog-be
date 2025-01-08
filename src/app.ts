@@ -16,6 +16,9 @@ import helmet from "helmet";
 import xss, { IFilterXSSOptions } from "xss";
 import logger from "./utils/logger";
 
+import fs from "fs/promises";
+import CatchAsync from "./utils/error/CatchAsync";
+import path from "path";
 // Cấu hình CORS: Cho phép các nguồn cụ thể (Vercel và localhost)
 const corsOptions: CorsOptions = {
   origin: [process.env.ORIGIN!, "http://localhost:3000"], // Định nghĩa các nguồn gốc được phép
@@ -96,6 +99,80 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.originalUrl}`); // Ghi lại thông tin yêu cầu vào log
   next();
 });
+
+app.get(
+  "/logs",
+  CatchAsync(async (req, res, next) => {
+    const combinedLogPath = path.join(__dirname, "../logs", "combined.log");
+    const errorLogPath = path.join(__dirname, "../logs", "error.log");
+
+    try {
+      // Đọc nội dung của cả hai file
+      const [combinedLog, errorLog] = await Promise.all([
+        fs.readFile(combinedLogPath, "utf-8"),
+        fs.readFile(errorLogPath, "utf-8"),
+      ]);
+
+      // Trả về nội dung dưới dạng HTML
+      res.send(`
+        <html>
+          <head>
+            <title>Logs Viewer</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                padding: 20px;
+                line-height: 1.6;
+              }
+              .log-section {
+                margin-bottom: 20px;
+              }
+              .log-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 10px;
+              }
+              .log-content {
+                background: #f9f9f9;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                overflow-x: auto;
+                white-space: pre-wrap; /* Bảo toàn định dạng dòng */
+                font-family: monospace;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="log-section">
+                <div class="log-title">Combined Logs</div>
+                <div class="log-content">${combinedLog.replace(
+                  /\n/g,
+                  "<br>"
+                )}</div>
+              </div>
+              <div class="log-section">
+                <div class="log-title">Error Logs</div>
+                <div class="log-content">${errorLog.replace(
+                  /\n/g,
+                  "<br>"
+                )}</div>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (err) {
+      next(err);
+    }
+  })
+);
 
 // Routes: Định nghĩa các route cho các API
 app.use(`${URL_API}/email`, routerEmail); // Định nghĩa route cho email
