@@ -178,8 +178,8 @@ export const uploadToIkOneAndManyAndVideo = (folder: string) => {
     if (!files?.["image"] && !files?.["images"] && !files?.["video"])
       return next();
 
-    const image = files["image"][0];
-    const video = files["video"][0];
+    const image = files["image"]?.[0];
+    const video = files["video"]?.[0];
     const images = files["images"];
 
     const processImgs: Promise<void>[] = [];
