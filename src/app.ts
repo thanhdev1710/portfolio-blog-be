@@ -7,6 +7,7 @@ import routerCategories from "./routes/categories/categories.route";
 import routerLike from "./routes/likes/like.route";
 import routerBookmark from "./routes/bookmarks/bookmark.route";
 import routerComment from "./routes/comments/comment.route";
+import routerProjects from "./routes/projects/projects.route";
 import cors, { CorsOptions } from "cors";
 import GlobalError from "./controllers/error/GlobalError";
 import AppError from "./utils/error/AppError";
@@ -63,6 +64,7 @@ app.use(
 );
 
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "/views"));
 
 // Hàm làm sạch dữ liệu đầu vào, tránh tấn công XSS
 const cleanObject = (obj: any) => {
@@ -114,60 +116,10 @@ app.get(
       ]);
 
       // Trả về nội dung dưới dạng HTML
-      res.send(`
-        <html>
-          <head>
-            <title>Logs Viewer</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-              }
-              .container {
-                padding: 20px;
-                line-height: 1.6;
-              }
-              .log-section {
-                margin-bottom: 20px;
-              }
-              .log-title {
-                font-size: 20px;
-                font-weight: bold;
-                color: #333;
-                margin-bottom: 10px;
-              }
-              .log-content {
-                background: #f9f9f9;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                overflow-x: auto;
-                white-space: pre-wrap; /* Bảo toàn định dạng dòng */
-                font-family: monospace;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="log-section">
-                <div class="log-title">Combined Logs</div>
-                <div class="log-content">${combinedLog.replace(
-                  /\n/g,
-                  "<br>"
-                )}</div>
-              </div>
-              <div class="log-section">
-                <div class="log-title">Error Logs</div>
-                <div class="log-content">${errorLog.replace(
-                  /\n/g,
-                  "<br>"
-                )}</div>
-              </div>
-            </div>
-          </body>
-        </html>
-      `);
+      res.render("Log", {
+        combinedLog,
+        errorLog,
+      });
     } catch (err) {
       next(err);
     }
@@ -175,6 +127,7 @@ app.get(
 );
 
 // Routes: Định nghĩa các route cho các API
+// Routes Blog
 app.use(`${URL_API}/email`, routerEmail); // Định nghĩa route cho email
 app.use(`${URL_API}/posts`, routerPosts); // Định nghĩa route cho posts
 app.use(`${URL_API}/users`, routerUsers); // Định nghĩa route cho users
@@ -183,6 +136,8 @@ app.use(`${URL_API}/categories`, routerCategories);
 app.use(`${URL_API}/like`, routerLike);
 app.use(`${URL_API}/bookmark`, routerBookmark);
 app.use(`${URL_API}/comments`, routerComment);
+// Routes Portfolio
+app.use(`${URL_API}/projects`, routerProjects);
 
 // Route catch-all: Trả lỗi nếu URL không tồn tại
 app.all("*", (req: Request, res: Response, next: NextFunction) => {

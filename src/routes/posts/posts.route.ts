@@ -17,8 +17,9 @@ import { recordView } from "../../controllers/view/view.controller";
 import {
   resizeImage,
   uploadImage,
-  uploadToImageKit,
-} from "../../controllers/upload/uploadImgUser";
+  uploadToIk,
+} from "../../controllers/upload/upload.controller";
+
 const router = express.Router();
 
 router
@@ -29,7 +30,7 @@ router
     restrictTo(["admin", "author"]),
     uploadImage,
     resizeImage(false),
-    uploadToImageKit("/post-img"),
+    uploadToIk("/post-img"),
     validatePost,
     createPost
   );

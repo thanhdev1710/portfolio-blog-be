@@ -33,10 +33,6 @@ const logger = createLogger({
   ],
 });
 
-logger.error("Test error log"); // Phải ghi vào `error.log`
-logger.info("Test info log"); // Phải ghi vào `combined.log`
-console.log("run");
-
 // Nếu ứng dụng chạy trong môi trường phát triển, thêm log vào console
 if (process.env.NODE_ENV !== "production") {
   logger.add(
@@ -45,17 +41,5 @@ if (process.env.NODE_ENV !== "production") {
     })
   );
 }
-
-console.log("NODE_ENV:", process.env.NODE_ENV);
-
-if (process.env.NODE_ENV === "production") {
-  console.log("Production environment detected.");
-} else {
-  console.log("Development environment detected.");
-}
-
-// Kiểm tra lại đường dẫn tệp log
-console.log("combined log path:", path.join(logDirectory, "combined.log"));
-console.log("error log path:", path.join(logDirectory, "error.log"));
 
 export default logger;

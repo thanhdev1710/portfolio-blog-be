@@ -209,7 +209,6 @@ export const signup = CatchAsync(async (req, res, next) => {
 
 export const login = CatchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  console.log(email, password);
 
   const rs = (
     await db

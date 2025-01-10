@@ -22,10 +22,10 @@ import {
   validationUpdatePasswordUser,
 } from "../../controllers/auth/auth.controller";
 import {
-  uploadToImageKit,
+  uploadToIk,
   uploadImage,
   resizeImage,
-} from "../../controllers/upload/uploadImgUser";
+} from "../../controllers/upload/upload.controller";
 
 const router = express.Router();
 
@@ -48,7 +48,7 @@ router
     validationUpdateMe,
     uploadImage,
     resizeImage(true),
-    uploadToImageKit("/user-img"),
+    uploadToIk("/user-img"),
     updateMe
   );
 router.route("/deleteMe").delete(protect, deleteMe);

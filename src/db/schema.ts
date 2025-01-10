@@ -2,6 +2,7 @@ import { pgTable, foreignKey, unique, check, serial, varchar, text, integer, tim
 import { sql } from "drizzle-orm"
 
 export const roleEnum = pgEnum("role_enum", ['admin', 'author', 'editor', 'subscriber'])
+export const statusEnum = pgEnum("status_enum", ['active', 'in-development', 'no-funding'])
 
 
 export const posts = pgTable("posts", {
@@ -121,6 +122,25 @@ export const likes = pgTable("likes", {
 		likesPostUnique: unique("likes_post_unique").on(table.userId, table.postId),
 		likesStatusCheck: check("likes_status_check", sql`(status)::text = ANY ((ARRAY['like'::character varying, 'dislike'::character varying])::text[])`),
 		likesCheck: check("likes_check", sql`(COALESCE(((post_id)::boolean)::integer, 0) + COALESCE(((comment_id)::boolean)::integer, 0)) = 1`),
+	}
+});
+
+export const projects = pgTable("projects", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 100 }).notNull(),
+	slug: varchar({ length: 120 }).notNull(),
+	imgMain: text("img_main").notNull(),
+	imgGallery: text("img_gallery").array(),
+	shortDescription: varchar("short_description", { length: 300 }),
+	detailedDescription: text("detailed_description"),
+	demoLink: text("demo_link"),
+	status: statusEnum().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
+	video: text().notNull(),
+}, (table) => {
+	return {
+		projectsSlugKey: unique("projects_slug_key").on(table.slug),
 	}
 });
 
