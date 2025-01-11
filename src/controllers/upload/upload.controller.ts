@@ -58,7 +58,7 @@ export const uploadImage = upload.single("image");
 export const uploadImages = upload.array("images");
 export const uploadOneAndManyAndVideo = upload.fields([
   { name: "image", maxCount: 1 },
-  { name: "images", maxCount: 10 },
+  { name: "images", maxCount: 15 },
   { name: "video", maxCount: 1 },
 ]);
 
@@ -190,8 +190,9 @@ export const uploadToIkOneAndManyAndVideo = (folder: string) => {
           ik
             .upload({
               file: file.buffer,
-              fileName: `thanhdev.avif`,
+              fileName: file.originalname,
               folder: folder + "/images",
+              useUniqueFileName: false,
             })
             .then((value) => {
               if (!req.body.images) {
@@ -208,8 +209,9 @@ export const uploadToIkOneAndManyAndVideo = (folder: string) => {
         ik
           .upload({
             file: image.buffer,
-            fileName: `thanhdev.avif`,
+            fileName: image.originalname,
             folder: folder + "/images",
+            useUniqueFileName: false,
           })
           .then((value) => {
             req.body.image = value.url;
@@ -222,8 +224,9 @@ export const uploadToIkOneAndManyAndVideo = (folder: string) => {
         ik
           .upload({
             file: video.buffer,
-            fileName: `thanhdev.${video.mimetype.split("/")[1]}`,
+            fileName: video.originalname,
             folder: folder + "/videos",
+            useUniqueFileName: false,
           })
           .then((value) => {
             req.body.video = value.url;

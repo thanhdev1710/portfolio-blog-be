@@ -28,7 +28,7 @@ export const validateCreateProject = CatchAsync(async (req, res, next) => {
 
 export const getAllProject = CatchAsync(async (req, res, next) => {
   const data = await db.select().from(projects);
-  res.json({
+  res.status(200).json({
     status: "success",
     data,
   });
@@ -42,7 +42,7 @@ export const getProjectBySlug = CatchAsync(async (req, res, next) => {
       .from(projects)
       .where(eq(projects.slug, slug));
 
-    res.json({
+    res.status(200).json({
       status: "success",
       data,
     });
@@ -53,10 +53,23 @@ export const getProjectBySlug = CatchAsync(async (req, res, next) => {
 
 export const createProject = CatchAsync(async (req, res, next) => {
   const data = (await db.insert(projects).values(req.body).returning())[0];
-  res.json({
+  res.status(201).json({
     status: "success",
     data,
   });
 });
 
 export const updateProject = CatchAsync(async (req, res, next) => {});
+
+export const deleteProject = CatchAsync(async (req, res, next) => {
+  const { slug } = req.params;
+  if (slug && typeof slug === "string") {
+    await db.delete(projects).where(eq(projects.slug, slug));
+
+    res.status(204).json({
+      status: "success",
+    });
+  } else {
+    next(new AppError("Not found", 404));
+  }
+});

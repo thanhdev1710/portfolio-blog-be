@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createProject,
+  deleteProject,
   getAllProject,
   getProjectBySlug,
   updateProject,
@@ -25,6 +26,10 @@ router
     createProject
   );
 
-router.route("/:slug").get(getProjectBySlug).patch(updateProject);
+router
+  .route("/:slug")
+  .get(getProjectBySlug)
+  .patch(updateProject)
+  .delete(deleteProject);
 
 export default router;
