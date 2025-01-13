@@ -71,6 +71,26 @@ export const validationUpdateRole = CatchAsync(async (req, res, next) => {
   next();
 });
 
+export const getMe = CatchAsync(async (req, res, next) => {
+  const { id } = (req as any).user;
+
+  const data = await db
+    .select({
+      email: users.email,
+      name: users.name,
+      image: users.image,
+      role: users.role,
+      id: users.id,
+    })
+    .from(users)
+    .where(eq(users.id, id));
+
+  res.json({
+    status: "success",
+    data: data[0],
+  });
+});
+
 export const updateMe = CatchAsync(async (req, res, next) => {
   const { id } = (req as any).user;
 

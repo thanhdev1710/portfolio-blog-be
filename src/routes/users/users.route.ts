@@ -2,6 +2,7 @@ import express from "express";
 import {
   deleteMe,
   deleteUser,
+  getMe,
   updateMe,
   updateRole,
   updateUser,
@@ -40,6 +41,8 @@ router
 router
   .route("/updatePassword")
   .patch(protect, validationUpdatePasswordUser, updatePassword);
+
+router.route("/getMe").get(protect, getMe);
 
 router
   .route("/updateMe")
