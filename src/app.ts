@@ -126,6 +126,11 @@ app.get(
   })
 );
 
+app.post(`${URL_API}/visit`, (req, res) => {
+  console.log(req.body.page);
+  res.send("ok");
+});
+
 // Routes: Định nghĩa các route cho các API
 // Routes Blog
 app.use(`${URL_API}/email`, routerEmail); // Định nghĩa route cho email

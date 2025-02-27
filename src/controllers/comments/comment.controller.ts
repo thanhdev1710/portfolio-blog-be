@@ -1,6 +1,6 @@
 import { asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { db } from "../../db/db";
-import { comments, likes, users } from "../../db/schema";
+import { comments, likes, posts, users } from "../../db/schema";
 import CatchAsync from "../../utils/error/CatchAsync";
 import { z } from "zod";
 import AppError from "../../utils/error/AppError";
